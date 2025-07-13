@@ -9,6 +9,14 @@ export async function POST(req: Request) {
         const formData = await req.formData();
         const file = formData.get("video") as File;
 
+        if (!file || !(file instanceof File)) {
+            return NextResponse.json({ error: "Файл обязателен" }, { status: 400 });
+        }
+
+        if (file.type !== "video/mp4") {
+            return NextResponse.json({ error: "Допускаются только .mp4 файлы" }, { status: 400 });
+        }
+
         const uploadDir = path.join(process.cwd(), "uploadfolder");
         await fs.mkdir(uploadDir, { recursive: true });
 
