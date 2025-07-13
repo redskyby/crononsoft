@@ -16,8 +16,6 @@ const Timeline: React.FC<TimelineProps> = ({ videoName, currentTime, duration, o
     const [error, setError] = useState<string | null>(null);
 
 
-    console.log(currentTime , duration , "--------------");
-
     useEffect(() => {
         const fetchThumbnails = async () => {
             setLoading(true);

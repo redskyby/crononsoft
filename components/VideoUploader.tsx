@@ -52,6 +52,8 @@ const VideoUploader = () => {
                 throw new Error(result.error || "Ошибка загрузки");
             }
 
+            console.log(res);
+
             SerVideoDow(result.uniqueFileName as string);
             resetForm(); // очистим форму
         } catch (err) {
@@ -111,13 +113,10 @@ const VideoUploader = () => {
                                     className="text-red-600 text-sm text-center py-2"
                                 />
 
-                                {/*{videoSrc && (*/}
-                                {/*    <div className="rounded-lg overflow-hidden shadow-md">*/}
-                                {/*        <video controls className="w-full h-[300px] object-cover" src={videoSrc} />*/}
-                                {/*    </div>*/}
-                                {/*)}*/}
+                                {videoSrc && videoDonw && (
+                                    <VideoPlayer VIDEO_SRC={videoSrc} VIDEO_NAME={videoDonw} />
+                                )}
 
-                                 <VideoPlayer/>
 
                                 <button
                                     type="submit"

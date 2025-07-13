@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Timeline from "@/components/TimeLine";
 
-const VIDEO_SRC = '/uploads/92c60d62-922c-485f-828e-5e04568a1b54.mp4'; // путь к видео в public
-const VIDEO_NAME = '92c60d62-922c-485f-828e-5e04568a1b54.mp4';
+// const VIDEO_SRC = '/uploads/92c60d62-922c-485f-828e-5e04568a1b54.mp4'; // путь к видео в public
+// const VIDEO_NAME = '92c60d62-922c-485f-828e-5e04568a1b54.mp4';
 // const THUMBNAIL_COUNT = 10;
 // const THUMBNAIL_WIDTH = 160;
 // const THUMBNAIL_HEIGHT = 90;
 
-const VideoPlayer = () => {
+const VideoPlayer = ({VIDEO_SRC , VIDEO_NAME } : {VIDEO_SRC : string , VIDEO_NAME : string}) => {
     const videoRef = useRef<HTMLVideoElement>(null);
 
     const [duration, setDuration] = useState(0);
@@ -51,7 +51,8 @@ const VideoPlayer = () => {
         };
     }, []);
 
-    // console.log("duration" ,duration );
+
+
 
     const handleSeek = (time: number) => {
         if (videoRef.current) {
@@ -59,8 +60,6 @@ const VideoPlayer = () => {
             setCurrentTime(time);
         }
     };
-
-
 
 
     return (

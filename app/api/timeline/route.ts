@@ -5,9 +5,11 @@ import fs from 'fs/promises';
 const FFMPEG_PATH = '/usr/bin/ffmpeg'; // путь к ffmpeg в WSL
 ffmpeg.setFfmpegPath(FFMPEG_PATH);
 
-export async function POST() {
+export async function POST(req: Request) {
     try {
-        const videoPath = '/mnt/d/development/crononsoft/public/uploads/92c60d62-922c-485f-828e-5e04568a1b54.mp4';
+        const {videoName} = await req.json();
+
+        const videoPath = `/mnt/d/development/crononsoft/public/uploads/${videoName}`;
         const outputDir = '/mnt/d/development/crononsoft/public/uploads/frames';
 
         await fs.mkdir(outputDir, { recursive: true });
