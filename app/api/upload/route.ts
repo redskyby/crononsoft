@@ -17,7 +17,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Допускаются только .mp4 файлы" }, { status: 400 });
         }
 
-        const uploadDir = path.join(process.cwd(), "uploadfolder");
+        const uploadDir = path.join(process.cwd(), "public", "uploads");
         await fs.mkdir(uploadDir, { recursive: true });
 
         const uniqueFileName = `${uuidv4()}${`.mp4`}`;
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
         await fs.writeFile(filePath, fileBuffer);
 
-        return NextResponse.json({ message: "works" });
+        return NextResponse.json({ uniqueFileName });
     } catch (e) {
         console.error("Ошибка", e);
         return NextResponse.json({ error: "Ошибка" }, { status: 400 });
