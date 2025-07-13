@@ -1,4 +1,5 @@
 import React, { useState,  useEffect } from 'react';
+import VideoRange from "@/components/VideoRange";
 
 // const VIDEO_SRC = '/uploads/92c60d62-922c-485f-828e-5e04568a1b54.mp4'; // путь к видео в public
 // const VIDEO_NAME = '92c60d62-922c-485f-828e-5e04568a1b54.mp4';
