@@ -6,6 +6,8 @@ import React, { useState } from "react";
 import { UploadSchema } from "@/validationShema/Upload.Schema";
 
 import VideoDownloader from "./VideoDownloader";
+import TimeLine from "@/components/TimeLine";
+import VideoPlayer from "@/components/VideoPlayer";
 
 const VideoUploader = () => {
     const [videoSrc, setVideoSrc] = useState<string | null>(null);
@@ -109,11 +111,13 @@ const VideoUploader = () => {
                                     className="text-red-600 text-sm text-center py-2"
                                 />
 
-                                {videoSrc && (
-                                    <div className="rounded-lg overflow-hidden shadow-md">
-                                        <video controls className="w-full h-[300px] object-cover" src={videoSrc} />
-                                    </div>
-                                )}
+                                {/*{videoSrc && (*/}
+                                {/*    <div className="rounded-lg overflow-hidden shadow-md">*/}
+                                {/*        <video controls className="w-full h-[300px] object-cover" src={videoSrc} />*/}
+                                {/*    </div>*/}
+                                {/*)}*/}
+
+                                 <VideoPlayer/>
 
                                 <button
                                     type="submit"
@@ -151,7 +155,9 @@ const VideoUploader = () => {
                     </Formik>
                 </div>
             </div>
-            <VideoDownloader path={videoDonw} />
+            {/*<VideoDownloader path={videoDonw} />*/}
+            {/*ИСПРАВИТЬ*/}
+            {/*<TimeLine videoName={videoDonw!} />*/}
         </div>
     );
 };
