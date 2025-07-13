@@ -5,8 +5,11 @@ import React, { useState } from "react";
 
 import { UploadSchema } from "@/validationShema/Upload.Schema";
 
+import VideoDownloader from "./VideoDownloader";
+
 const VideoUploader = () => {
     const [videoSrc, setVideoSrc] = useState<string | null>(null);
+    const [videoDonw, SerVideoDow] = useState<string | null>(null);
 
     const handleUpload = (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -47,12 +50,14 @@ const VideoUploader = () => {
                 throw new Error(result.error || "Ошибка загрузки");
             }
 
-            console.log("✅ Загружено:", result.message);
+            SerVideoDow(result.uniqueFileName as string);
             resetForm(); // очистим форму
         } catch (err) {
             console.error("❌ Ошибка:", err);
         }
     };
+
+    console.log("videoDonw", videoDonw);
 
     // TODO ДОБАВЬ УДАЛЕНИЕ ССЫЛКИ ПРИ РАЗМОНТИРОВАНИИ
     return (
@@ -146,6 +151,7 @@ const VideoUploader = () => {
                     </Formik>
                 </div>
             </div>
+            <VideoDownloader path={videoDonw} />
         </div>
     );
 };
