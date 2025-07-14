@@ -1,28 +1,36 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Timeline from "@/components/TimeLine";
+import VideoRange from "@/components/VideoRange";
+import Spinner from "@/components/Spinner";
 
-const VIDEO_SRC = '/uploads/92c60d62-922c-485f-828e-5e04568a1b54.mp4'; // путь к видео в public
-const VIDEO_NAME = '92c60d62-922c-485f-828e-5e04568a1b54.mp4';
+// const VIDEO_SRC = '/uploads/92c60d62-922c-485f-828e-5e04568a1b54.mp4'; // путь к видео в public
+// const VIDEO_NAME = '92c60d62-922c-485f-828e-5e04568a1b54.mp4';
 // const THUMBNAIL_COUNT = 10;
 // const THUMBNAIL_WIDTH = 160;
 // const THUMBNAIL_HEIGHT = 90;
 
-const VideoPlayer = () => {
+const VideoPlayer = ({VIDEO_SRC , VIDEO_NAME } : {VIDEO_SRC : string , VIDEO_NAME : string}) => {
     const videoRef = useRef<HTMLVideoElement>(null);
 
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
+    const [loading, setLoading] = useState(false);
 
+
+    // TODO ИСПРАВИТЬ , МОЖЕТ TRY
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
+        setLoading(true);
+
         const onLoadedMetadata = () => {
             if (video.duration && !isNaN(video.duration)) {
                 setDuration(video.duration);
-                // console.log('Video duration:', video.duration);
+                setLoading(false);
             } else {
                 console.error('Duration is not available');
+                setLoading(false);
             }
         };
 
@@ -33,6 +41,7 @@ const VideoPlayer = () => {
 
         const onError = (e: Event) => {
             console.error('Video error:', e);
+            setLoading(false);
         };
 
         video.addEventListener('loadedmetadata', onLoadedMetadata);
@@ -51,7 +60,10 @@ const VideoPlayer = () => {
         };
     }, []);
 
-    // console.log("duration" ,duration );
+    if (loading) {
+        return <Spinner />;
+    }
+
 
     const handleSeek = (time: number) => {
         if (videoRef.current) {
@@ -59,8 +71,6 @@ const VideoPlayer = () => {
             setCurrentTime(time);
         }
     };
-
-
 
 
     return (
@@ -72,12 +82,13 @@ const VideoPlayer = () => {
                 style={{ width: '100%', maxHeight: 300, objectFit: 'cover' }}
             />
 
-            <Timeline
-                videoName={VIDEO_NAME}
-                currentTime={currentTime}
-                duration={duration}
-                onSeek={handleSeek}
-            />
+            {/*<Timeline*/}
+            {/*    videoName={VIDEO_NAME}*/}
+            {/*    currentTime={currentTime}*/}
+            {/*    duration={duration}*/}
+            {/*    onSeek={handleSeek}*/}
+            {/*/>*/}
+            <VideoRange  duration={duration} videoName={VIDEO_NAME}/>
         </div>
     );
 };

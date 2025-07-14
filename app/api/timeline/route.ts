@@ -2,13 +2,17 @@ import { NextResponse } from 'next/server';
 import ffmpeg from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 
-const FFMPEG_PATH = '/usr/bin/ffmpeg'; // путь к ffmpeg в WSL
-ffmpeg.setFfmpegPath(FFMPEG_PATH);
+// const FFMPEG_PATH = '/usr/bin/ffmpeg'; // путь к ffmpeg в WSL
+// ffmpeg.setFfmpegPath(FFMPEG_PATH);
 
-export async function POST() {
+ffmpeg.setFfmpegPath('ffmpeg');
+
+export async function POST(req: Request) {
     try {
-        const videoPath = '/mnt/d/development/crononsoft/public/uploads/92c60d62-922c-485f-828e-5e04568a1b54.mp4';
-        const outputDir = '/mnt/d/development/crononsoft/public/uploads/frames';
+        const {videoName} = await req.json();
+
+        const videoPath = `D:\\development\\crononsoft\\public\\uploads\\${videoName}`;
+        const outputDir = `D:\\development\\crononsoft\\public\\uploads\\frames`;
 
         await fs.mkdir(outputDir, { recursive: true });
 

@@ -1,4 +1,6 @@
 import React, { useState,  useEffect } from 'react';
+import VideoRange from "@/components/VideoRange";
+import Spinner from "@/components/Spinner";
 
 // const VIDEO_SRC = '/uploads/92c60d62-922c-485f-828e-5e04568a1b54.mp4'; // путь к видео в public
 // const VIDEO_NAME = '92c60d62-922c-485f-828e-5e04568a1b54.mp4';
@@ -16,13 +18,11 @@ const Timeline: React.FC<TimelineProps> = ({ videoName, currentTime, duration, o
     const [error, setError] = useState<string | null>(null);
 
 
-    console.log(currentTime , duration , "--------------");
-
     useEffect(() => {
         const fetchThumbnails = async () => {
+            try {
             setLoading(true);
             setError(null);
-            try {
                 const res = await fetch('/api/timeline', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -37,6 +37,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoName, currentTime, duration, o
                 const data = await res.json();
                 setThumbnails(data.thumbnails || []);
             } catch (e: any) {
+                console.log(e);
                 setError(e.message || 'Неизвестная ошибка');
             } finally {
                 setLoading(false);
@@ -48,12 +49,19 @@ const Timeline: React.FC<TimelineProps> = ({ videoName, currentTime, duration, o
         }
     }, [videoName]);
 
-    if (loading) return <div>Загрузка превью...</div>;
+
+    if (loading) {
+        return <Spinner />;
+    }
+
     if (error) return <div style={{ color: 'red' }}>{error}</div>;
-    if (thumbnails.length === 0) return <div>Превью не найдено</div>;
+    // if (thumbnails.length === 0 && loading) return <div>Превью не найдено</div>;
 
     const THUMBNAIL_WIDTH = 160;
     const THUMBNAIL_HEIGHT = 90;
+
+
+
 
     // Длительность сегмента для каждого превью
     const segmentDuration = duration / thumbnails.length || 0;
@@ -70,6 +78,8 @@ const Timeline: React.FC<TimelineProps> = ({ videoName, currentTime, duration, o
         const clickTime = (clickX / rect.width) * duration;
         onSeek(clickTime);
     };
+
+
 
     return (
         <div style={{ position: 'relative', padding: 8, overflowX: 'auto', maxWidth: '100%' }}>

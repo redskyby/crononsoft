@@ -5,13 +5,13 @@ import React, { useState } from "react";
 
 import { UploadSchema } from "@/validationShema/Upload.Schema";
 
-import VideoDownloader from "./VideoDownloader";
-import TimeLine from "@/components/TimeLine";
 import VideoPlayer from "@/components/VideoPlayer";
+import Spinner from "./Spinner";
 
 const VideoUploader = () => {
     const [videoSrc, setVideoSrc] = useState<string | null>(null);
-    const [videoDonw, SerVideoDow] = useState<string | null>(null);
+    const [videoDonw, serVideoDow] = useState<string | null>(null);
+    const [loading , setLoading] = useState<boolean>(false);
 
     const handleUpload = (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -35,12 +35,16 @@ const VideoUploader = () => {
     };
 
     const handleSubmit = async (values: { video: File | null }, { resetForm }: { resetForm: () => void }) => {
+        try {
+
+            setLoading(true);
+
         if (!values.video) return;
 
         const formData = new FormData();
         formData.append("video", values.video);
 
-        try {
+
             const res = await fetch("/api/upload", {
                 method: "POST",
                 body: formData,
@@ -52,14 +56,19 @@ const VideoUploader = () => {
                 throw new Error(result.error || "Ошибка загрузки");
             }
 
-            SerVideoDow(result.uniqueFileName as string);
-            resetForm(); // очистим форму
+            serVideoDow(result.uniqueFileName as string);
+            resetForm();
         } catch (err) {
             console.error("❌ Ошибка:", err);
+        }finally {
+            setLoading(false)
         }
     };
 
-    console.log("videoDonw", videoDonw);
+    if (loading) {
+        return <Spinner />;
+    }
+
 
     // TODO ДОБАВЬ УДАЛЕНИЕ ССЫЛКИ ПРИ РАЗМОНТИРОВАНИИ
     return (
@@ -111,13 +120,10 @@ const VideoUploader = () => {
                                     className="text-red-600 text-sm text-center py-2"
                                 />
 
-                                {/*{videoSrc && (*/}
-                                {/*    <div className="rounded-lg overflow-hidden shadow-md">*/}
-                                {/*        <video controls className="w-full h-[300px] object-cover" src={videoSrc} />*/}
-                                {/*    </div>*/}
-                                {/*)}*/}
+                                {videoSrc && videoDonw && (
+                                    <VideoPlayer VIDEO_SRC={videoSrc} VIDEO_NAME={videoDonw} />
+                                )}
 
-                                 <VideoPlayer/>
 
                                 <button
                                     type="submit"
@@ -155,9 +161,6 @@ const VideoUploader = () => {
                     </Formik>
                 </div>
             </div>
-            {/*<VideoDownloader path={videoDonw} />*/}
-            {/*ИСПРАВИТЬ*/}
-            {/*<TimeLine videoName={videoDonw!} />*/}
         </div>
     );
 };
