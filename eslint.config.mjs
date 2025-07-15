@@ -21,7 +21,7 @@ const eslintConfig = [
         },
         rules: {
             "prettier/prettier": "error",
-            '@typescript-eslint/no-explicit-any': 'warn',
+            "@typescript-eslint/no-explicit-any": "warn",
             "import/order": [
                 "error",
                 {

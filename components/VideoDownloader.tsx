@@ -1,9 +1,9 @@
 import React from "react";
+import { DOWNLOAD_API } from "@/const/API.const";
 
 const VideoDownloader = ({ path }: { path: string | null }) => {
-    const filePath = path ? `/uploads/${path}` : null;
+    const filePath = path ? `${DOWNLOAD_API}${path}` : null;
 
-    console.log("path", filePath);
     return (
         <div>
             {filePath && (

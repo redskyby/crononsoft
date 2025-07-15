@@ -7,11 +7,14 @@ import { UploadSchema } from "@/validationShema/Upload.Schema";
 
 import VideoPlayer from "@/components/VideoPlayer";
 import Spinner from "./Spinner";
+import { makeRequest } from "@/utils/baseFetch";
+import { UPLOAD_API } from "@/const/API.const";
+import { UploadInterface } from "@/interface/Upload.interface";
 
 const VideoUploader = () => {
     const [videoSrc, setVideoSrc] = useState<string | null>(null);
     const [videoDonw, serVideoDow] = useState<string | null>(null);
-    const [loading , setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const handleUpload = (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -36,39 +39,27 @@ const VideoUploader = () => {
 
     const handleSubmit = async (values: { video: File | null }, { resetForm }: { resetForm: () => void }) => {
         try {
-
             setLoading(true);
 
-        if (!values.video) return;
+            if (!values.video) return;
 
-        const formData = new FormData();
-        formData.append("video", values.video);
+            const formData = new FormData();
+            formData.append("video", values.video);
 
+            const res = await makeRequest<UploadInterface>(UPLOAD_API, "POST", formData);
 
-            const res = await fetch("/api/upload", {
-                method: "POST",
-                body: formData,
-            });
-
-            const result = await res.json();
-
-            if (!res.ok) {
-                throw new Error(result.error || "Ошибка загрузки");
-            }
-
-            serVideoDow(result.uniqueFileName as string);
+            serVideoDow(res.uniqueFileName);
             resetForm();
         } catch (err) {
-            console.error("❌ Ошибка:", err);
-        }finally {
-            setLoading(false)
+            console.log("❌ Ошибка:", err);
+        } finally {
+            setLoading(false);
         }
     };
 
     if (loading) {
         return <Spinner />;
     }
-
 
     // TODO ДОБАВЬ УДАЛЕНИЕ ССЫЛКИ ПРИ РАЗМОНТИРОВАНИИ
     return (
@@ -120,10 +111,7 @@ const VideoUploader = () => {
                                     className="text-red-600 text-sm text-center py-2"
                                 />
 
-                                {videoSrc && videoDonw && (
-                                    <VideoPlayer VIDEO_SRC={videoSrc} VIDEO_NAME={videoDonw} />
-                                )}
-
+                                {videoSrc && videoDonw && <VideoPlayer VIDEO_SRC={videoSrc} VIDEO_NAME={videoDonw} />}
 
                                 <button
                                     type="submit"

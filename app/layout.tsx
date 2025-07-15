@@ -13,9 +13,7 @@ const inter = Inter({ subsets: ["latin"] });
 export default function RootLayout({ children }: PropsWithChildren) {
     return (
         <html lang="ru">
-            <body className={inter.className}>
-              {children}
-            </body>
+            <body className={inter.className}>{children}</body>
         </html>
     );
 }

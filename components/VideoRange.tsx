@@ -1,40 +1,40 @@
 import React, { useEffect, useRef, useState } from "react";
 import noUiSlider from "nouislider";
 import "nouislider/dist/nouislider.css";
-import Spinner from "@/components/Spinner";
+import { makeRequest } from "@/utils/baseFetch";
+import { GET_DURATION_API, VIDEO_EDIT_API } from "@/const/API.const";
+import { VideoEditInterface } from "@/interface/VideoEdit.interface";
+import { GetDurationInterface } from "@/interface/GetDuration.interface";
 
-const VideoRange = ({duration , videoName} : {duration : number , videoName : string}) => {
+const VideoRange = ({ videoName }: { videoName: string }) => {
     const sliderRef = useRef<HTMLDivElement>(null);
-    const [loading, setLoading] = useState(false);
     const [start, setStart] = useState<number>(0);
     const [end, setEnd] = useState<number>(0);
+    const [duration, setDuration] = useState<number>(10);
 
-    console.log("duration" , duration );
-
-
-    const handleCut = async (videoName : string , start : number , end : number) => {
+    const handleCut = async (videoName: string, start: number, end: number) => {
         try {
-            setLoading(true);
-            const res = await fetch('/api/videoedit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ videoName  , start ,end  }),
-            });
-
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.error || 'Ошибка при загрузке превью');
-            }
-
-            const data = await res.json();
+            const res = await makeRequest<VideoEditInterface>(VIDEO_EDIT_API, "POST", { videoName, start, end });
         } catch (e: any) {
             console.log(e);
         } finally {
-            setLoading(false);
         }
     };
 
+    const fetchDuration = async (videoName: string) => {
+        try {
+            const res = await makeRequest<GetDurationInterface>(GET_DURATION_API, "POST", { videoName });
+
+            setDuration(res.duration);
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
+
     useEffect(() => {
+        fetchDuration(videoName);
+
         if (!sliderRef.current) return;
 
         const slider = sliderRef.current;
@@ -44,7 +44,7 @@ const VideoRange = ({duration , videoName} : {duration : number , videoName : st
             connect: true,
             range: {
                 min: 0,
-                max: duration ,
+                max: duration,
             },
             step: 0.01,
         });
@@ -52,11 +52,10 @@ const VideoRange = ({duration , videoName} : {duration : number , videoName : st
         // Подписка на события изменения
         // @ts-ignore
         slider.noUiSlider?.on("update", (values, handle) => {
-            const start =  +parseFloat(values[0]).toFixed(2);
+            const start = +parseFloat(values[0]).toFixed(2);
             const end = +parseFloat(values[1]).toFixed(2);
-            setStart(start)
-            setEnd(end)
-            console.log("Start:", start, "End:", end);
+            setStart(start);
+            setEnd(end);
         });
 
         return () => {
@@ -74,9 +73,6 @@ const VideoRange = ({duration , videoName} : {duration : number , videoName : st
         }
     };
 
-    if (loading) {
-        return <Spinner />;
-    }
 
 
     return (
@@ -118,9 +114,7 @@ const VideoRange = ({duration , videoName} : {duration : number , videoName : st
                 </div>
             </div>
 
-            <button onClick={() => handleCut(videoName, start, end)}>
-                скачать обрезанную версию
-            </button>
+            <button onClick={() => handleCut(videoName, start, end)}>скачать обрезанную версию</button>
         </div>
     );
 };
