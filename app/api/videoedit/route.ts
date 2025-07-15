@@ -1,15 +1,17 @@
-import { NextResponse } from "next/server";
-import ffmpeg from "fluent-ffmpeg";
 import fs from "fs/promises";
 import path from "path";
+
+import ffmpeg from "fluent-ffmpeg";
+import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
+
 import { ErrorInterface } from "@/interface/Error.interface";
 import { VideoEditInterface } from "@/interface/VideoEdit.interface";
 
-// const FFMPEG_PATH = '/usr/bin/ffmpeg'; // Путь к ffmpeg в WSL
-// ffmpeg.setFfmpegPath(FFMPEG_PATH);
+const FFMPEG_PATH = "/usr/bin/ffmpeg"; // Путь к ffmpeg в WSL
+ffmpeg.setFfmpegPath(FFMPEG_PATH);
 
-ffmpeg.setFfmpegPath("ffmpeg");
+// ffmpeg.setFfmpegPath("ffmpeg");
 
 export async function POST(req: Request): Promise<NextResponse<VideoEditInterface | ErrorInterface>> {
     try {
@@ -44,6 +46,7 @@ export async function POST(req: Request): Promise<NextResponse<VideoEditInterfac
 
         return NextResponse.json({ trimmedVideo: "/uploads/trimmed/trimmed-video.mp4" });
     } catch (e) {
+        console.log(e);
         return NextResponse.json({ error: "Failed to trim video" }, { status: 500 });
     }
 }

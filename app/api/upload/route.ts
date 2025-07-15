@@ -3,8 +3,9 @@ import path from "path";
 
 import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
-import { UploadInterface } from "@/interface/Upload.interface";
+
 import { ErrorInterface } from "@/interface/Error.interface";
+import { UploadInterface } from "@/interface/Upload.interface";
 
 export async function POST(req: Request): Promise<NextResponse<UploadInterface | ErrorInterface>> {
     try {

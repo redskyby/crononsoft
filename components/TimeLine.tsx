@@ -1,11 +1,15 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
+
 import Spinner from "@/components/Spinner";
-import { makeRequest } from "@/utils/baseFetch";
 import { TIME_LINE_API } from "@/const/API.const";
+import { THUMBNAIL_HEIGHT, THUMBNAIL_WIDTH } from "@/const/TimeLine.const";
 import { TimeLineInterface } from "@/interface/TimeLine.Interface";
 import { TimelineProps } from "@/interface/TimeLine.Props";
+import { makeRequest } from "@/utils/baseFetch";
 
-const Timeline = ({ videoName, currentTime, duration, onSeek }: TimelineProps) => {
+const Timeline = ({ videoName, currentTime, onSeek, duration }: TimelineProps) => {
     const [thumbnails, setThumbnails] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -17,9 +21,9 @@ const Timeline = ({ videoName, currentTime, duration, onSeek }: TimelineProps) =
             const res = await makeRequest<TimeLineInterface>(TIME_LINE_API, "POST", { videoName });
 
             setThumbnails(res.thumbnails || []);
-        } catch (e: any) {
+        } catch (e) {
             console.log(e);
-            setError(e.message || "Неизвестная ошибка");
+            setError((e as Error).message || "Неизвестная ошибка");
         } finally {
             setLoading(false);
         }
@@ -35,10 +39,9 @@ const Timeline = ({ videoName, currentTime, duration, onSeek }: TimelineProps) =
         return <Spinner />;
     }
 
-    if (error) return <div style={{ color: "red" }}>{error}</div>;
-
-    const THUMBNAIL_WIDTH = 160;
-    const THUMBNAIL_HEIGHT = 90;
+    if (error) {
+        return <div className="text-red-600 text-sm font-medium">{error}</div>;
+    }
 
     // Длительность сегмента для каждого превью
     const segmentDuration = duration / thumbnails.length || 0;
@@ -46,7 +49,7 @@ const Timeline = ({ videoName, currentTime, duration, onSeek }: TimelineProps) =
     // Позиция курсора (красная линия) по текущему времени
     const cursorPos = duration ? (currentTime / duration) * thumbnails.length * THUMBNAIL_WIDTH : 0;
 
-    // Обработчик клика на таймлайн (не только на превью)
+    // Обработчик клика на таймлайн
     const onTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
         const rect = e.currentTarget.getBoundingClientRect();
         const clickX = e.clientX - rect.left;
@@ -56,25 +59,18 @@ const Timeline = ({ videoName, currentTime, duration, onSeek }: TimelineProps) =
         onSeek(clickTime);
     };
 
+    console.log(thumbnails);
+
     return (
-        <div style={{ position: "relative", padding: 8, overflowX: "auto", maxWidth: "100%" }}>
+        <div className="relative px-2 overflow-x-auto max-w-full">
             {/* Курсор — красная вертикальная линия */}
             <div
-                style={{
-                    position: "absolute",
-                    top: 0,
-                    left: cursorPos,
-                    width: 2,
-                    height: THUMBNAIL_HEIGHT,
-                    backgroundColor: "red",
-                    pointerEvents: "none",
-                    transition: "left 0.1s linear",
-                    zIndex: 10,
-                }}
+                className="absolute top-0 w-[2px] bg-red-600 pointer-events-none transition-all duration-100 z-10"
+                style={{ left: cursorPos, height: THUMBNAIL_HEIGHT }}
             />
 
-            {/* Таймлайн с превью — обертка для клика */}
-            <div style={{ display: "flex", gap: 8, cursor: "pointer" }} onClick={onTimelineClick}>
+            {/* Таймлайн с превью */}
+            <div className="flex gap-2 cursor-pointer" onClick={onTimelineClick}>
                 {thumbnails.map((src, i) => (
                     <img
                         key={i}
@@ -82,9 +78,8 @@ const Timeline = ({ videoName, currentTime, duration, onSeek }: TimelineProps) =
                         alt={`Thumbnail ${i + 1}`}
                         width={THUMBNAIL_WIDTH}
                         height={THUMBNAIL_HEIGHT}
-                        style={{ objectFit: "cover" }}
+                        className="object-cover"
                         onClick={(e) => {
-                            // Чтобы клик на превью не дублировался с родительским кликом
                             e.stopPropagation();
                             onSeek(i * segmentDuration);
                         }}

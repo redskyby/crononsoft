@@ -1,40 +1,28 @@
-import React, { useEffect, useRef, useState } from "react";
-import noUiSlider from "nouislider";
-import "nouislider/dist/nouislider.css";
-import { makeRequest } from "@/utils/baseFetch";
-import { GET_DURATION_API, VIDEO_EDIT_API } from "@/const/API.const";
-import { VideoEditInterface } from "@/interface/VideoEdit.interface";
-import { GetDurationInterface } from "@/interface/GetDuration.interface";
+"use client";
 
-const VideoRange = ({ videoName }: { videoName: string }) => {
-    const sliderRef = useRef<HTMLDivElement>(null);
+import noUiSlider from "nouislider";
+import React, { useEffect, useRef, useState } from "react";
+
+import "nouislider/dist/nouislider.css";
+import { VIDEO_EDIT_API } from "@/const/API.const";
+import { SliderElementInterface } from "@/interface/SliderElement.interface";
+import { VideoEditInterface } from "@/interface/VideoEdit.interface";
+import { makeRequest } from "@/utils/baseFetch";
+
+const VideoRange = ({ videoName, duration }: { videoName: string; duration: number }) => {
+    const sliderRef = useRef<HTMLDivElement & SliderElementInterface>(null);
     const [start, setStart] = useState<number>(0);
     const [end, setEnd] = useState<number>(0);
-    const [duration, setDuration] = useState<number>(10);
 
     const handleCut = async (videoName: string, start: number, end: number) => {
         try {
-            const res = await makeRequest<VideoEditInterface>(VIDEO_EDIT_API, "POST", { videoName, start, end });
-        } catch (e: any) {
-            console.log(e);
-        } finally {
-        }
-    };
-
-    const fetchDuration = async (videoName: string) => {
-        try {
-            const res = await makeRequest<GetDurationInterface>(GET_DURATION_API, "POST", { videoName });
-
-            setDuration(res.duration);
+            await makeRequest<VideoEditInterface>(VIDEO_EDIT_API, "POST", { videoName, start, end });
         } catch (e) {
             console.log(e);
         }
     };
 
-
     useEffect(() => {
-        fetchDuration(videoName);
-
         if (!sliderRef.current) return;
 
         const slider = sliderRef.current;
@@ -50,30 +38,24 @@ const VideoRange = ({ videoName }: { videoName: string }) => {
         });
 
         // Подписка на события изменения
-        // @ts-ignore
-        slider.noUiSlider?.on("update", (values, handle) => {
-            const start = +parseFloat(values[0]).toFixed(2);
-            const end = +parseFloat(values[1]).toFixed(2);
+        slider.noUiSlider?.on("update", (values) => {
+            const start = Number(parseFloat(String(values[0])).toFixed(2));
+            const end = Number(parseFloat(String(values[1])).toFixed(2));
             setStart(start);
             setEnd(end);
         });
 
         return () => {
-            // @ts-ignore
             slider.noUiSlider?.destroy();
         };
     }, []);
 
     const updateSlider = (newStart: number, newEnd: number) => {
         const slider = sliderRef.current;
-        // @ts-ignore
         if (slider?.noUiSlider) {
-            // @ts-ignore
             slider.noUiSlider.set([newStart, newEnd]);
         }
     };
-
-
 
     return (
         <div>
@@ -113,8 +95,14 @@ const VideoRange = ({ videoName }: { videoName: string }) => {
                     />
                 </div>
             </div>
-
-            <button onClick={() => handleCut(videoName, start, end)}>скачать обрезанную версию</button>
+            <div className="flex justify-center items-center mt-8! mb-8!    ">
+                <button
+                    onClick={() => handleCut(videoName, start, end)}
+                    className="px-6! py-2! bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                >
+                    Скачать обрезанную версию
+                </button>
+            </div>
         </div>
     );
 };

@@ -1,13 +1,18 @@
-import { NextResponse } from "next/server";
-import ffmpeg from "fluent-ffmpeg";
 import fs from "fs/promises";
-import { ErrorInterface } from "@/interface/Error.interface";
 import path from "path";
-import { TimeLineInterface } from "@/interface/TimeLine.Interface";
-import { v4 as uuidv4 } from "uuid";
-import { FILE_FRAMES } from "@/const/File.const";
 
-ffmpeg.setFfmpegPath("ffmpeg");
+import ffmpeg from "fluent-ffmpeg";
+import { NextResponse } from "next/server";
+import { v4 as uuidv4 } from "uuid";
+
+import { FILE_FRAMES } from "@/const/File.const";
+import { ErrorInterface } from "@/interface/Error.interface";
+import { TimeLineInterface } from "@/interface/TimeLine.Interface";
+
+const FFMPEG_PATH = "/usr/bin/ffmpeg"; // Путь к ffmpeg в WSL
+ffmpeg.setFfmpegPath(FFMPEG_PATH);
+
+// ffmpeg.setFfmpegPath("ffmpeg");
 
 export async function POST(req: Request): Promise<NextResponse<TimeLineInterface | ErrorInterface>> {
     try {
@@ -16,6 +21,15 @@ export async function POST(req: Request): Promise<NextResponse<TimeLineInterface
         const uploadDir = path.join(process.cwd(), "public", "uploads");
         const outputDir = path.join(uploadDir, "frames");
         const videoPath = path.join(uploadDir, videoName);
+
+        // Очистить папку frames, если она существует
+        try {
+            const files = await fs.readdir(outputDir);
+            await Promise.all(files.map((file) => fs.unlink(path.join(outputDir, file))));
+        } catch (err) {
+            // Если папки нет — игнорируем ошибку
+            if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+        }
 
         await fs.mkdir(outputDir, { recursive: true });
 

@@ -1,18 +1,32 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from "react";
-import VideoRange from "@/components/VideoRange";
+
 import Timeline from "@/components/TimeLine";
+import VideoRange from "@/components/VideoRange";
+import { GET_DURATION_API } from "@/const/API.const";
+import { GetDurationInterface } from "@/interface/GetDuration.interface";
+import { makeRequest } from "@/utils/baseFetch";
 
-const VideoPlayer = ({ VIDEO_SRC, VIDEO_NAME }: { VIDEO_SRC: string; VIDEO_NAME: string }) => {
+const VideoPlayer = ({ videoSrc, videoName }: { videoSrc: string; videoName: string }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
-
-    const [duration, setDuration] = useState(0);
-    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState<number>(0);
+    const [currentTime, setCurrentTime] = useState<number>(0);
 
     const handleSeek = (time: number) => {
         if (videoRef.current) {
             videoRef.current.currentTime = time;
-            console.log(time, "----------");
             setCurrentTime(time);
+        }
+    };
+
+    const fetchDuration = async (videoName: string) => {
+        try {
+            const res = await makeRequest<GetDurationInterface>(GET_DURATION_API, "POST", { videoName });
+
+            setDuration(res.duration);
+        } catch (e) {
+            console.log(e);
         }
     };
 
@@ -20,44 +34,42 @@ const VideoPlayer = ({ VIDEO_SRC, VIDEO_NAME }: { VIDEO_SRC: string; VIDEO_NAME:
         const video = videoRef.current;
         if (!video) return;
 
-        const onLoadedMetadata = () => {
-            if (video.duration && !isNaN(video.duration)) {
-                setDuration(video.duration);
-            } else {
-                console.error("Duration is not available");
-            }
-        };
-
         const onTimeUpdate = () => {
             setCurrentTime(video.currentTime);
-            console.log("Current time:", video.currentTime);
+            // console.log("Current time:", video.currentTime);
         };
 
         const onError = (e: Event) => {
             console.error("Video error:", e);
         };
 
-        video.addEventListener("loadedmetadata", onLoadedMetadata);
         video.addEventListener("timeupdate", onTimeUpdate);
         video.addEventListener("error", onError);
 
-        if (video.readyState >= 1 && !isNaN(video.duration) && video.duration > 0) {
-            setDuration(video.duration);
-        }
-
         return () => {
-            video.removeEventListener("loadedmetadata", onLoadedMetadata);
             video.removeEventListener("timeupdate", onTimeUpdate);
             video.removeEventListener("error", onError);
         };
     }, []);
 
+    useEffect(() => {
+        fetchDuration(videoName);
+    }, []);
 
     return (
         <div>
-            <video ref={videoRef} controls src={VIDEO_SRC} className="w-full max-h-[300px] object-cover" />
-            <Timeline videoName={VIDEO_NAME} currentTime={currentTime} duration={duration} onSeek={handleSeek} />
-            <VideoRange videoName={VIDEO_NAME} />
+            <video
+                ref={videoRef}
+                controls
+                src={videoSrc}
+                className="w-full max-h-[300px] object-cover rounded-2xl shadow-md"
+            />
+            {duration > 0 && (
+                <>
+                    <Timeline videoName={videoName} currentTime={currentTime} onSeek={handleSeek} duration={duration} />
+                    <VideoRange videoName={videoName} duration={duration} />
+                </>
+            )}
         </div>
     );
 };
