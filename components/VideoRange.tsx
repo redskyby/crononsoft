@@ -1,36 +1,24 @@
-import React, { useEffect, useRef, useState } from "react";
-import noUiSlider from "nouislider";
-import "nouislider/dist/nouislider.css";
-import Spinner from "@/components/Spinner";
+"use client";
 
-const VideoRange = ({duration , videoName} : {duration : number , videoName : string}) => {
-    const sliderRef = useRef<HTMLDivElement>(null);
-    const [loading, setLoading] = useState(false);
+import noUiSlider from "nouislider";
+import React, { useEffect, useRef, useState } from "react";
+
+import "nouislider/dist/nouislider.css";
+import { VIDEO_EDIT_API } from "@/const/API.const";
+import { SliderElementInterface } from "@/interface/SliderElement.interface";
+import { VideoEditInterface } from "@/interface/VideoEdit.interface";
+import { makeRequest } from "@/utils/baseFetch";
+
+const VideoRange = ({ videoName, duration }: { videoName: string; duration: number }) => {
+    const sliderRef = useRef<HTMLDivElement & SliderElementInterface>(null);
     const [start, setStart] = useState<number>(0);
     const [end, setEnd] = useState<number>(0);
 
-    console.log("duration" , duration );
-
-
-    const handleCut = async (videoName : string , start : number , end : number) => {
+    const handleCut = async (videoName: string, start: number, end: number) => {
         try {
-            setLoading(true);
-            const res = await fetch('/api/videoedit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ videoName  , start ,end  }),
-            });
-
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.error || 'Ошибка при загрузке превью');
-            }
-
-            const data = await res.json();
-        } catch (e: any) {
+            await makeRequest<VideoEditInterface>(VIDEO_EDIT_API, "POST", { videoName, start, end });
+        } catch (e) {
             console.log(e);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -44,40 +32,30 @@ const VideoRange = ({duration , videoName} : {duration : number , videoName : st
             connect: true,
             range: {
                 min: 0,
-                max: duration ,
+                max: duration,
             },
             step: 0.01,
         });
 
         // Подписка на события изменения
-        // @ts-ignore
-        slider.noUiSlider?.on("update", (values, handle) => {
-            const start =  +parseFloat(values[0]).toFixed(2);
-            const end = +parseFloat(values[1]).toFixed(2);
-            setStart(start)
-            setEnd(end)
-            console.log("Start:", start, "End:", end);
+        slider.noUiSlider?.on("update", (values) => {
+            const start = Number(parseFloat(String(values[0])).toFixed(2));
+            const end = Number(parseFloat(String(values[1])).toFixed(2));
+            setStart(start);
+            setEnd(end);
         });
 
         return () => {
-            // @ts-ignore
             slider.noUiSlider?.destroy();
         };
     }, []);
 
     const updateSlider = (newStart: number, newEnd: number) => {
         const slider = sliderRef.current;
-        // @ts-ignore
         if (slider?.noUiSlider) {
-            // @ts-ignore
             slider.noUiSlider.set([newStart, newEnd]);
         }
     };
-
-    if (loading) {
-        return <Spinner />;
-    }
-
 
     return (
         <div>
@@ -117,10 +95,14 @@ const VideoRange = ({duration , videoName} : {duration : number , videoName : st
                     />
                 </div>
             </div>
-
-            <button onClick={() => handleCut(videoName, start, end)}>
-                скачать обрезанную версию
-            </button>
+            <div className="flex justify-center items-center mt-8! mb-8!    ">
+                <button
+                    onClick={() => handleCut(videoName, start, end)}
+                    className="px-6! py-2! bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                >
+                    Скачать обрезанную версию
+                </button>
+            </div>
         </div>
     );
 };

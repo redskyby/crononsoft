@@ -1,69 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
+"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+
 import Timeline from "@/components/TimeLine";
 import VideoRange from "@/components/VideoRange";
-import Spinner from "@/components/Spinner";
+import { GET_DURATION_API } from "@/const/API.const";
+import { GetDurationInterface } from "@/interface/GetDuration.interface";
+import { makeRequest } from "@/utils/baseFetch";
 
-// const VIDEO_SRC = '/uploads/92c60d62-922c-485f-828e-5e04568a1b54.mp4'; // путь к видео в public
-// const VIDEO_NAME = '92c60d62-922c-485f-828e-5e04568a1b54.mp4';
-// const THUMBNAIL_COUNT = 10;
-// const THUMBNAIL_WIDTH = 160;
-// const THUMBNAIL_HEIGHT = 90;
-
-const VideoPlayer = ({VIDEO_SRC , VIDEO_NAME } : {VIDEO_SRC : string , VIDEO_NAME : string}) => {
+const VideoPlayer = ({ videoSrc, videoName }: { videoSrc: string; videoName: string }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
-
-    const [duration, setDuration] = useState(0);
-    const [currentTime, setCurrentTime] = useState(0);
-    const [loading, setLoading] = useState(false);
-
-
-    // TODO ИСПРАВИТЬ , МОЖЕТ TRY
-    useEffect(() => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        setLoading(true);
-
-        const onLoadedMetadata = () => {
-            if (video.duration && !isNaN(video.duration)) {
-                setDuration(video.duration);
-                setLoading(false);
-            } else {
-                console.error('Duration is not available');
-                setLoading(false);
-            }
-        };
-
-        const onTimeUpdate = () => {
-            setCurrentTime(video.currentTime);
-            console.log('Current time:', video.currentTime);
-        };
-
-        const onError = (e: Event) => {
-            console.error('Video error:', e);
-            setLoading(false);
-        };
-
-        video.addEventListener('loadedmetadata', onLoadedMetadata);
-        video.addEventListener('timeupdate', onTimeUpdate);
-        video.addEventListener('error', onError);
-
-        // Принудительная загрузка метаданных, если видео уже готово
-        if (video.readyState >= 1) {
-            onLoadedMetadata();
-        }
-
-        return () => {
-            video.removeEventListener('loadedmetadata', onLoadedMetadata);
-            video.removeEventListener('timeupdate', onTimeUpdate);
-            video.removeEventListener('error', onError);
-        };
-    }, []);
-
-    if (loading) {
-        return <Spinner />;
-    }
-
+    const [duration, setDuration] = useState<number>(0);
+    const [currentTime, setCurrentTime] = useState<number>(0);
 
     const handleSeek = (time: number) => {
         if (videoRef.current) {
@@ -72,23 +20,56 @@ const VideoPlayer = ({VIDEO_SRC , VIDEO_NAME } : {VIDEO_SRC : string , VIDEO_NAM
         }
     };
 
+    const fetchDuration = async (videoName: string) => {
+        try {
+            const res = await makeRequest<GetDurationInterface>(GET_DURATION_API, "POST", { videoName });
+
+            setDuration(res.duration);
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const onTimeUpdate = () => {
+            setCurrentTime(video.currentTime);
+            // console.log("Current time:", video.currentTime);
+        };
+
+        const onError = (e: Event) => {
+            console.error("Video error:", e);
+        };
+
+        video.addEventListener("timeupdate", onTimeUpdate);
+        video.addEventListener("error", onError);
+
+        return () => {
+            video.removeEventListener("timeupdate", onTimeUpdate);
+            video.removeEventListener("error", onError);
+        };
+    }, []);
+
+    useEffect(() => {
+        fetchDuration(videoName);
+    }, []);
 
     return (
         <div>
             <video
                 ref={videoRef}
                 controls
-                src={VIDEO_SRC}
-                style={{ width: '100%', maxHeight: 300, objectFit: 'cover' }}
+                src={videoSrc}
+                className="w-full max-h-[300px] object-cover rounded-2xl shadow-md"
             />
-
-            {/*<Timeline*/}
-            {/*    videoName={VIDEO_NAME}*/}
-            {/*    currentTime={currentTime}*/}
-            {/*    duration={duration}*/}
-            {/*    onSeek={handleSeek}*/}
-            {/*/>*/}
-            <VideoRange  duration={duration} videoName={VIDEO_NAME}/>
+            {duration > 0 && (
+                <>
+                    <Timeline videoName={videoName} currentTime={currentTime} onSeek={handleSeek} duration={duration} />
+                    <VideoRange videoName={videoName} duration={duration} />
+                </>
+            )}
         </div>
     );
 };
