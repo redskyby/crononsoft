@@ -42,6 +42,9 @@ const eslintConfig = [
             ],
         },
     },
+    {
+        ignores: ["**/*.test.ts"],
+    },
 ];
 
 export default eslintConfig;
