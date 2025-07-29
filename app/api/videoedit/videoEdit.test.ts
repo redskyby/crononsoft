@@ -24,8 +24,8 @@ jest.mock("fluent-ffmpeg", () => {
     return ffmpegMock;
 });
 
-describe("POST /api/video/trim", () => {
-    it("returns 400 if required fields are missing", async () => {
+describe("POST /api/videoEdit", () => {
+    it("return 400 if required fields are missing", async () => {
         const mockReq = {
             json: async () => ({ videoName: null, start: 0, end: 10 }),
         } as Request;
@@ -37,7 +37,7 @@ describe("POST /api/video/trim", () => {
         expect(data).toEqual({ error: "Missing required fields" });
     });
 
-    it("returns 200 and trimmed video path on success", async () => {
+    it("return 200 and trimmed video path on success", async () => {
         const mockReq = {
             json: async () => ({ videoName: "test.mp4", start: 0, end: 10 }),
         } as Request;

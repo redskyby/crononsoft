@@ -18,6 +18,10 @@ export async function POST(req: Request): Promise<NextResponse<TimeLineInterface
     try {
         const { videoName } = await req.json();
 
+        if (!videoName) {
+            return NextResponse.json({ error: "Missing or invalid videoName" }, { status: 400 });
+        }
+
         const uploadDir = path.join(process.cwd(), "public", "uploads");
         const outputDir = path.join(uploadDir, "frames");
         const videoPath = path.join(uploadDir, videoName);
