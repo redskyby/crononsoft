@@ -14,7 +14,7 @@ ffmpeg.setFfmpegPath(FFMPEG_PATH);
 
 // ffmpeg.setFfmpegPath("ffmpeg");
 
-export async function POST(req: Request): Promise<NextResponse<TimeLineInterface | ErrorInterface>> {
+export async function POST(req: Request): Promise<NextResponse<ErrorInterface | TimeLineInterface>> {
     try {
         const { videoName } = await req.json();
 
@@ -39,7 +39,7 @@ export async function POST(req: Request): Promise<NextResponse<TimeLineInterface
 
         const uniquePrefix = uuidv4();
 
-        return new Promise((resolve, reject) => {
+        const thumbnails: Promise<string[]> = new Promise((resolve, reject) => {
             ffmpeg(videoPath)
                 .on("filenames", (filenames) => {
                     console.log("Generated thumbnails:", filenames);
@@ -49,11 +49,11 @@ export async function POST(req: Request): Promise<NextResponse<TimeLineInterface
                     for (let i = 1; i <= 10; i++) {
                         thumbnails.push(`${FILE_FRAMES}${uniquePrefix}-${i}.jpg`);
                     }
-                    resolve(NextResponse.json({ thumbnails }));
+                    resolve(thumbnails);
                 })
-                .on("error", (err) => {
-                    console.error("FFmpeg error:", err);
-                    reject(NextResponse.json({ error: "FFmpeg failed" }, { status: 500 }));
+                .on("error", (error) => {
+                    console.log("FFmpeg error event:", error);
+                    reject(error);
                 })
                 .screenshots({
                     count: 10,
@@ -62,8 +62,12 @@ export async function POST(req: Request): Promise<NextResponse<TimeLineInterface
                     size: "160x90",
                 });
         });
+
+        const result: string[] = await thumbnails;
+
+        return NextResponse.json({ thumbnails: result });
     } catch (e) {
-        console.error("Unexpected error:", e);
-        return NextResponse.json({ error: "Internal error" }, { status: 500 });
+        console.error("FFmpeg error", e);
+        return NextResponse.json({ error: "FFmpeg error" }, { status: 400 });
     }
 }
