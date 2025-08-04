@@ -1,14 +1,7 @@
 import { POST } from "./route";
-import { Null } from "@sinclair/typebox";
 
 jest.mock("uuid", () => ({
     v4: jest.fn(() => "mocked-uuid"),
-}));
-
-jest.mock("fs/promises", () => ({
-    mkdir: jest.fn(() => Promise.resolve()),
-    readdir: jest.fn(() => Promise.resolve([])),
-    unlink: jest.fn(() => Promise.resolve()),
 }));
 
 jest.mock("fluent-ffmpeg", () => {
