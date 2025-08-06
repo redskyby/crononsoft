@@ -41,4 +41,23 @@ describe("upload route", () => {
         expect(res.status).toBe(400);
         expect(data).toEqual({ error: "Допускаются только .mp4 файлы" });
     });
+
+    it("should return good answer with status code 200", async () => {
+        const mockFile = new File(["dummy"], "badfile.mp4", {
+            type: "video/mp4",
+        });
+
+        const mockReq = {
+            formData: async () => ({
+                get: () => mockFile,
+            }),
+        } as unknown as Request;
+
+        const res = await POST(mockReq);
+
+        const data = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(data).toHaveProperty("uniqueFileName");
+    });
 });
